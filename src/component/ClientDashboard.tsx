@@ -7,9 +7,9 @@ import { ScheduleEntry, PointsEntry } from '@/types';
 
 interface ClientDashboardProps {
   initialData: {
-    matches: unknown;
-    pointsTable: unknown;
-    schedule: unknown;
+    matches: any;
+    pointsTable: any;
+    schedule: any;
     lastUpdated: string;
   } | null;
 }
@@ -111,7 +111,7 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
 
   // Extract data from current source
   const matches = currentData?.matches;
-  const liveMatchesData = currentData?.liveMatches;
+  const liveMatchesData = (currentData as any)?.liveMatches;
   const pointsTable = currentData?.pointsTable;
   
   // Extract matches array from the API response structure
@@ -273,7 +273,7 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
       )}
 
       {/* Points Table Section */}
-      {pointsTable?.data?.pointsTable && (
+      {(pointsTable as any)?.data?.pointsTable && (
         <section className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3 sm:p-6 shadow-sm">
           <h2 className="text-lg sm:text-xl font-bold text-blue-800 dark:text-blue-200 mb-3 sm:mb-4">📊 Points Table</h2>
           <div className="overflow-x-auto -mx-3 sm:mx-0">
@@ -295,7 +295,7 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {pointsTable.data.pointsTable.map((team: PointsEntry, index: number) => (
+                  {(pointsTable as any).data.pointsTable.map((team: PointsEntry, index: number) => (
                     <tr key={index} className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                       <td className="p-2 sm:p-3 font-semibold text-gray-900 dark:text-gray-100 text-xs sm:text-sm">{team.position}</td>
                       <td className="p-2 sm:p-3 text-gray-900 dark:text-gray-100 text-xs sm:text-sm font-medium">{team.team}</td>
@@ -359,47 +359,47 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
       )}
 
       {/* Statistics Section */}
-      {pointsTable?.data?.statistics && (
+      {(pointsTable as any)?.data?.statistics && (
         <section className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-3 sm:p-6 shadow-sm">
           <h2 className="text-lg sm:text-xl font-bold text-purple-800 dark:text-purple-200 mb-3 sm:mb-4">📈 Tournament Statistics</h2>
           
           {/* Overall Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-600 text-center">
-              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{pointsTable.data.statistics.totalTeams}</div>
+              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{(pointsTable as any).data.statistics.totalTeams}</div>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Teams</div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-600 text-center">
-              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{pointsTable.data.statistics.totalMatches}</div>
+              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{(pointsTable as any).data.statistics.totalMatches}</div>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Matches</div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-600 text-center col-span-2 md:col-span-1">
-              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{pointsTable.data.statistics.averagePointsPerTeam}</div>
+              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{(pointsTable as any).data.statistics.averagePointsPerTeam}</div>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Avg Points/Team</div>
             </div>
           </div>
 
           {/* Top and Bottom Teams */}
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-            {pointsTable.data.statistics.topTeam && (
+            {(pointsTable as any).data.statistics.topTeam && (
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 p-3 sm:p-4 rounded-lg border border-green-200 dark:border-green-700">
                 <h3 className="text-base sm:text-lg font-semibold text-green-800 dark:text-green-200 mb-2 sm:mb-3 flex items-center">
                   🏆 Top Team
                 </h3>
                 <div className="space-y-2">
-                  <div className="font-bold text-lg sm:text-xl text-green-900 dark:text-green-100">{pointsTable.data.statistics.topTeam.team}</div>
+                  <div className="font-bold text-lg sm:text-xl text-green-900 dark:text-green-100">{(pointsTable as any).data.statistics.topTeam.team}</div>
                   <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
-                    <div className="text-gray-700 dark:text-gray-300">Position: <span className="font-semibold">{pointsTable.data.statistics.topTeam.position}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Points: <span className="font-semibold">{pointsTable.data.statistics.topTeam.points}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Played: <span className="font-semibold">{pointsTable.data.statistics.topTeam.played}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Won: <span className="font-semibold">{pointsTable.data.statistics.topTeam.wins}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Lost: <span className="font-semibold">{pointsTable.data.statistics.topTeam.losses}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">NRR: <span className="font-semibold">{pointsTable.data.statistics.topTeam.netRunRate.toFixed(3)}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Position: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.position}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Points: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.points}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Played: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.played}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Won: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.wins}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Lost: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.losses}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">NRR: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.netRunRate.toFixed(3)}</span></div>
                   </div>
                   <div className="mt-2 sm:mt-3">
                     <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Recent Form:</div>
                     <div className="flex gap-1">
-                      {pointsTable.data.statistics.topTeam.performanceHistory?.slice(-5).map((result: string, idx: number) => (
+                      {(pointsTable as any).data.statistics.topTeam.performanceHistory?.slice(-5).map((result: string, idx: number) => (
                         <span
                           key={idx}
                           className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 text-xs font-bold rounded-full text-white ${
@@ -416,25 +416,25 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
             )}
 
             {/* Bottom Team */}
-            {pointsTable.data.statistics.bottomTeam && (
+            {(pointsTable as any).data.statistics.bottomTeam && (
               <div className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/30 dark:to-pink-900/30 p-3 sm:p-4 rounded-lg border border-red-200 dark:border-red-700">
                 <h3 className="text-base sm:text-lg font-semibold text-red-800 dark:text-red-200 mb-2 sm:mb-3 flex items-center">
                   📉 Bottom Team
                 </h3>
                 <div className="space-y-2">
-                  <div className="font-bold text-lg sm:text-xl text-red-900 dark:text-red-100">{pointsTable.data.statistics.bottomTeam.team}</div>
+                  <div className="font-bold text-lg sm:text-xl text-red-900 dark:text-red-100">{(pointsTable as any).data.statistics.bottomTeam.team}</div>
                   <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
-                    <div className="text-gray-700 dark:text-gray-300">Position: <span className="font-semibold">{pointsTable.data.statistics.bottomTeam.position}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Points: <span className="font-semibold">{pointsTable.data.statistics.bottomTeam.points}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Played: <span className="font-semibold">{pointsTable.data.statistics.bottomTeam.played}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Won: <span className="font-semibold">{pointsTable.data.statistics.bottomTeam.wins}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Lost: <span className="font-semibold">{pointsTable.data.statistics.bottomTeam.losses}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">NRR: <span className="font-semibold">{pointsTable.data.statistics.bottomTeam.netRunRate.toFixed(3)}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Position: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.position}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Points: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.points}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Played: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.played}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Won: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.wins}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Lost: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.losses}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">NRR: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.netRunRate.toFixed(3)}</span></div>
                   </div>
                   <div className="mt-2 sm:mt-3">
                     <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Recent Form:</div>
                     <div className="flex gap-1">
-                      {pointsTable.data.statistics.bottomTeam.performanceHistory?.slice(-5).map((result: string, idx: number) => (
+                      {(pointsTable as any).data.statistics.bottomTeam.performanceHistory?.slice(-5).map((result: string, idx: number) => (
                         <span
                           key={idx}
                           className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 text-xs font-bold rounded-full text-white ${
@@ -452,6 +452,200 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
           </div>
         </section>
       )}
+
+      {/* Tournament Schedule Section */}
+      {(() => {
+        const rawScheduleData = (currentData as any)?.schedule?.data?.schedule || {};
+        const scheduleData = Object.keys(rawScheduleData).reduce((acc, matchType) => {
+          acc[matchType] = rawScheduleData[matchType].map((match: ScheduleEntry) => ({
+            ...match,
+            teamA: cleanTeamName(match.teamA),
+            teamB: cleanTeamName(match.teamB)
+          }));
+          return acc;
+        }, {} as Record<string, ScheduleEntry[]>);
+
+        return Object.keys(scheduleData).length > 0 && (
+          <section className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3 sm:p-6 shadow-sm">
+            <h2 className="text-lg sm:text-xl font-bold text-indigo-800 dark:text-indigo-200 mb-3 sm:mb-4 flex items-center">
+              🗓️ Tournament Schedule
+            </h2>
+            <div className="space-y-4 sm:space-y-6">
+              {Object.entries(scheduleData).map(([matchType, matches]) => (
+                <div key={matchType} className="bg-white dark:bg-gray-800 rounded-lg border border-indigo-200 dark:border-indigo-600 p-3 sm:p-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-3 flex items-center">
+                    <span className="mr-2">
+                      {matchType === 'FINAL' ? '🏆' : 
+                       matchType === 'PLAYOFFS' ? '🎯' : 
+                       matchType === 'LEAGUE' ? '⚔️' : '🏏'}
+                    </span>
+                    {matchType} ({(matches as ScheduleEntry[]).length} matches)
+                  </h3>
+                  <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-300 dark:scrollbar-thumb-indigo-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-700">
+                    <div className="grid gap-3 sm:gap-4 pr-2">
+                      {(matches as ScheduleEntry[]).map((match: ScheduleEntry, index: number) => (
+                        <div key={match.id || index} className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3 sm:p-4 hover:shadow-lg transition-all duration-300">
+                          {/* Match Header */}
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                                <div className="font-bold text-base sm:text-lg text-gray-900 dark:text-gray-100">
+                                  {match.teamA} vs {match.teamB}
+                                </div>
+                                {match.matchNumber && (
+                                  <span className="text-xs font-semibold px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full w-fit">
+                                    Match #{match.matchNumber}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                                📍 {match.venue}
+                              </div>
+                              {match.matchType && match.matchType !== 'LEAGUE' && (
+                                <div className="text-xs text-indigo-600 dark:text-indigo-400 mt-1 font-medium">
+                                  {match.matchType}
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-right mt-2 sm:mt-0">
+                              {match.dateTime && (
+                                <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 font-medium">
+                                  🕐 {match.dateTime}
+                                </div>
+                              )}
+                              {match.verdict && (
+                                <div className="text-xs font-medium text-green-600 dark:text-green-400 mt-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 rounded">
+                                  ✅ Completed
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Scores Section */}
+                          {(match.teamAStatus || match.teamBStatus) && (
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 mb-3 border border-gray-300 dark:border-gray-600">
+                              <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">📊 Match Score</h4>
+                              <div className="grid gap-2">
+                                {match.teamAStatus && (
+                                  <div className="flex justify-between items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-700">
+                                    <span className="font-medium text-blue-800 dark:text-blue-200">{match.teamA}</span>
+                                    <div className="text-right">
+                                      <span className="font-bold text-blue-900 dark:text-blue-100">
+                                        {match.teamAStatus.score || match.teamAStatus.runs}
+                                        {(match.teamAStatus.wickets || match.teamAStatus.wickets === 0) && `/${match.teamAStatus.wickets}`}
+                                      </span>
+                                      {(match.teamAStatus.overs !== null && match.teamAStatus.overs !== undefined) && (
+                                        <span className="text-xs text-blue-600 dark:text-blue-400 ml-2">
+                                          ({match.teamAStatus.overs} ov)
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {match.teamBStatus && (
+                                  <div className="flex justify-between items-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-200 dark:border-orange-700">
+                                    <span className="font-medium text-orange-800 dark:text-orange-200">{match.teamB}</span>
+                                    <div className="text-right">
+                                      <span className="font-bold text-orange-900 dark:text-orange-100">
+                                        {match.teamBStatus.score || match.teamBStatus.runs}
+                                        {(match.teamBStatus.wickets || match.teamBStatus.wickets === 0) && `/${match.teamBStatus.wickets}`}
+                                      </span>
+                                      {(match.teamBStatus.overs !== null && match.teamBStatus.overs !== undefined) && (
+                                        <span className="text-xs text-orange-600 dark:text-orange-400 ml-2">
+                                          ({match.teamBStatus.overs} ov)
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Match Result */}
+                          {match.verdict && (
+                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-lg p-3 mb-3 border border-green-200 dark:border-green-700">
+                              <h4 className="text-sm font-semibold text-green-800 dark:text-green-200 mb-1 flex items-center">
+                                🏆 Match Result
+                              </h4>
+                              <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                                {match.verdict}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Action Links */}
+                          {(match.matchReportUrl || match.matchHighlightsUrl || match.matchCenterUrl) && (
+                            <div className="flex flex-wrap gap-2">
+                              {match.matchReportUrl && (
+                                <a
+                                  href={match.matchReportUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-xs font-medium px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                                >
+                                  📄 Match Report
+                                </a>
+                              )}
+                              {match.matchHighlightsUrl && (
+                                <a
+                                  href={match.matchHighlightsUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-xs font-medium px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
+                                >
+                                  🎥 Highlights
+                                </a>
+                              )}
+                              {match.matchCenterUrl && match.matchCenterUrl !== match.matchReportUrl && (
+                                <a
+                                  href={match.matchCenterUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-xs font-medium px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
+                                >
+                                  🎯 Match Center
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* Recent Matches Section */}
+      {(() => {
+        const recentMatches = matchesArray.filter((match: ScheduleEntry) => match.verdict && match.verdict.trim() !== '');
+        return recentMatches.length > 0 && (
+          <section className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">
+              📋 Recent Results
+            </h2>
+            <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-700">
+              <div className="grid gap-4 pr-2">
+                {recentMatches.map((match: ScheduleEntry, index: number) => (
+                  <div key={index} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="font-semibold text-gray-900 dark:text-gray-100">{match.teamA} vs {match.teamB}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{match.venue}</div>
+                    {match.verdict && (
+                      <div className="text-sm font-medium text-green-700 dark:text-green-300 mt-2 bg-green-50 dark:bg-green-900/30 p-2 rounded">
+                        {match.verdict}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
     </div>
   );
 }
