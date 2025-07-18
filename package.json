@@ -1,0 +1,46 @@
+{
+  "name": "ipl-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "scraper:install": "cd scraper-service && npm install",
+    "scraper:dev": "cd scraper-service && npm run dev",
+    "scraper:start": "cd scraper-service && npm run server",
+    "scraper:scrape-all": "cd scraper-service && npm run scrape:all",
+    "dev:full": "concurrently \"npm run scraper:start\" \"npm run dev\"",
+    "scrape-schedule": "tsx src/lib/scheduleScraper.ts",
+    "scrape-point": "tsx src/lib/pointsTableScraper.ts"
+  },
+  "ts-node": {
+    "esm": true
+  },
+  "dependencies": {
+    "next": "15.4.1",
+    "node-cache": "^5.1.2",
+    "puppeteer": "^24.13.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "swr": "^2.3.4",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4.1.11",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "concurrently": "^8.2.2",
+    "eslint": "^9",
+    "eslint-config-next": "15.4.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11",
+    "tsx": "^4.20.3",
+    "typescript": "^5"
+  }
+}
