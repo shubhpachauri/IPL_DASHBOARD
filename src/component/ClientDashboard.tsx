@@ -3,13 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import { useLiveIPL } from '@/hooks/useLiveIPL';
 import { useCacheManagement } from '@/lib/cacheUtils';
-import { ScheduleEntry, PointsEntry } from '@/types';
+import { ScheduleEntry, PointsEntry, Match } from '@/types';
 
 interface ClientDashboardProps {
   initialData: {
-    matches: any;
-    pointsTable: any;
-    schedule: any;
+    matches: Match[];
+    pointsTable: PointsEntry[];
+    schedule: ScheduleEntry[];
     lastUpdated: string;
   } | null;
 }
@@ -75,18 +75,21 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
   const currentData = (liveMatchesFromHook && liveMatchesFromHook.length > 0) || 
                      (pointsTableFromHook && pointsTableFromHook.length > 0) 
     ? {
-        matches: { data: { matches: [] } }, // Hook doesn't provide general matches
-        liveMatches: { data: { matches: liveMatchesFromHook || [] } },
-        pointsTable: { 
-          data: { 
-            pointsTable: pointsTableFromHook || [], 
-            statistics: statistics 
-          } 
-        },
-        schedule: initialData?.schedule,
+        matches: initialData?.matches || [],
+        liveMatches: liveMatchesFromHook || [],
+        pointsTable: pointsTableFromHook || [],
+        schedule: initialData?.schedule || [],
+        statistics: statistics,
         lastUpdated: lastUpdated.live || lastUpdated.points || new Date().toISOString()
       }
-    : initialData;
+    : {
+        matches: initialData?.matches || [],
+        liveMatches: [],
+        pointsTable: initialData?.pointsTable || [],
+        schedule: initialData?.schedule || [],
+        statistics: undefined,
+        lastUpdated: initialData?.lastUpdated || new Date().toISOString()
+      };
   
   if (!currentData) {
     return (
@@ -110,28 +113,33 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
   };
 
   // Extract data from current source
-  const matches = currentData?.matches;
-  const liveMatchesData = (currentData as any)?.liveMatches;
-  const pointsTable = currentData?.pointsTable;
+  const matches = currentData?.matches || [];
+  const liveMatchesData = currentData?.liveMatches || [];
+  const pointsTable = currentData?.pointsTable || [];
+  const schedule = currentData?.schedule || [];
+  const currentStatistics = currentData?.statistics;
   
   // Extract matches array from the API response structure
-  const rawMatchesArray = matches?.data?.matches || [];
-  const matchesArray = rawMatchesArray.map((match: ScheduleEntry) => ({
+  const matchesArray = matches.map((match: Match | ScheduleEntry) => ({
     ...match,
     teamA: cleanTeamName(match.teamA),
     teamB: cleanTeamName(match.teamB)
   }));
 
-  const liveMatchesFromAPI = liveMatchesData?.data?.matches || [];
-  const liveMatchesFiltered = matchesArray.filter((match: ScheduleEntry) => {
-    if (!match.dateTime) return false;
+  const liveMatchesFromAPI = liveMatchesData.map((match: ScheduleEntry) => ({
+    ...match,
+    teamA: cleanTeamName(match.teamA),
+    teamB: cleanTeamName(match.teamB)
+  }));
+  const liveMatchesFiltered = matchesArray.filter((match: Match | ScheduleEntry) => {
+    if (!('dateTime' in match)) return false;
     const now = new Date();
-    const matchDate = new Date(match.dateTime);
+    const matchDate = new Date((match as ScheduleEntry).dateTime);
     const timeDiff = now.getTime() - matchDate.getTime();
     const hoursFromStart = timeDiff / (1000 * 60 * 60);
     // Consider live if match started within the last 4 hours and no verdict yet
-    return hoursFromStart >= 0 && hoursFromStart <= 4 && (!match.verdict || match.verdict.trim() === '');
-  });
+    return hoursFromStart >= 0 && hoursFromStart <= 4 && (!('verdict' in match) || !(match as ScheduleEntry).verdict || (match as ScheduleEntry).verdict?.trim() === '');
+  }) as ScheduleEntry[];
   
   // Use API live matches if available, otherwise use filtered matches, or hook data
   const liveMatches = liveMatchesFromAPI.length > 0 
@@ -154,12 +162,12 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
         teamA: cleanTeamName(match.teamA),
         teamB: cleanTeamName(match.teamB)
       }))
-    : matchesArray.filter((match: ScheduleEntry) => {
-        if (!match.dateTime) return false;
+    : matchesArray.filter((match: Match | ScheduleEntry) => {
+        if (!('dateTime' in match)) return false;
         const now = new Date();
-        const matchDate = new Date(match.dateTime);
-        return matchDate > now && !match.verdict;
-      }) || [];
+        const matchDate = new Date((match as ScheduleEntry).dateTime);
+        return matchDate > now && (!('verdict' in match) || !(match as ScheduleEntry).verdict);
+      }) as ScheduleEntry[] || [];
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -273,7 +281,7 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
       )}
 
       {/* Points Table Section */}
-      {(pointsTable as any)?.data?.pointsTable && (
+      {pointsTable && pointsTable.length > 0 && (
         <section className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3 sm:p-6 shadow-sm">
           <h2 className="text-lg sm:text-xl font-bold text-blue-800 dark:text-blue-200 mb-3 sm:mb-4">📊 Points Table</h2>
           <div className="overflow-x-auto -mx-3 sm:mx-0">
@@ -295,7 +303,7 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {(pointsTable as any).data.pointsTable.map((team: PointsEntry, index: number) => (
+                  {pointsTable.map((team: PointsEntry, index: number) => (
                     <tr key={index} className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                       <td className="p-2 sm:p-3 font-semibold text-gray-900 dark:text-gray-100 text-xs sm:text-sm">{team.position}</td>
                       <td className="p-2 sm:p-3 text-gray-900 dark:text-gray-100 text-xs sm:text-sm font-medium">{team.team}</td>
@@ -359,47 +367,47 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
       )}
 
       {/* Statistics Section */}
-      {(pointsTable as any)?.data?.statistics && (
+      {currentStatistics && (
         <section className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-3 sm:p-6 shadow-sm">
           <h2 className="text-lg sm:text-xl font-bold text-purple-800 dark:text-purple-200 mb-3 sm:mb-4">📈 Tournament Statistics</h2>
           
           {/* Overall Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-600 text-center">
-              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{(pointsTable as any).data.statistics.totalTeams}</div>
+              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{currentStatistics.totalTeams}</div>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Teams</div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-600 text-center">
-              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{(pointsTable as any).data.statistics.totalMatches}</div>
+              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{currentStatistics.totalMatches}</div>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Matches</div>
             </div>
             <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg border border-purple-200 dark:border-purple-600 text-center col-span-2 md:col-span-1">
-              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{(pointsTable as any).data.statistics.averagePointsPerTeam}</div>
+              <div className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{currentStatistics.averagePointsPerTeam}</div>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Avg Points/Team</div>
             </div>
           </div>
 
           {/* Top and Bottom Teams */}
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-            {(pointsTable as any).data.statistics.topTeam && (
+            {currentStatistics.topTeam && (
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 p-3 sm:p-4 rounded-lg border border-green-200 dark:border-green-700">
                 <h3 className="text-base sm:text-lg font-semibold text-green-800 dark:text-green-200 mb-2 sm:mb-3 flex items-center">
                   🏆 Top Team
                 </h3>
                 <div className="space-y-2">
-                  <div className="font-bold text-lg sm:text-xl text-green-900 dark:text-green-100">{(pointsTable as any).data.statistics.topTeam.team}</div>
+                  <div className="font-bold text-lg sm:text-xl text-green-900 dark:text-green-100">{currentStatistics.topTeam.team}</div>
                   <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
-                    <div className="text-gray-700 dark:text-gray-300">Position: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.position}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Points: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.points}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Played: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.played}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Won: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.wins}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Lost: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.losses}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">NRR: <span className="font-semibold">{(pointsTable as any).data.statistics.topTeam.netRunRate.toFixed(3)}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Position: <span className="font-semibold">{currentStatistics.topTeam.position}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Points: <span className="font-semibold">{currentStatistics.topTeam.points}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Played: <span className="font-semibold">{currentStatistics.topTeam.played}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Won: <span className="font-semibold">{currentStatistics.topTeam.wins}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Lost: <span className="font-semibold">{currentStatistics.topTeam.losses}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">NRR: <span className="font-semibold">{currentStatistics.topTeam.netRunRate.toFixed(3)}</span></div>
                   </div>
                   <div className="mt-2 sm:mt-3">
                     <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Recent Form:</div>
                     <div className="flex gap-1">
-                      {(pointsTable as any).data.statistics.topTeam.performanceHistory?.slice(-5).map((result: string, idx: number) => (
+                      {currentStatistics.topTeam.performanceHistory?.slice(-5).map((result: string, idx: number) => (
                         <span
                           key={idx}
                           className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 text-xs font-bold rounded-full text-white ${
@@ -416,25 +424,25 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
             )}
 
             {/* Bottom Team */}
-            {(pointsTable as any).data.statistics.bottomTeam && (
+            {currentStatistics.bottomTeam && (
               <div className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/30 dark:to-pink-900/30 p-3 sm:p-4 rounded-lg border border-red-200 dark:border-red-700">
                 <h3 className="text-base sm:text-lg font-semibold text-red-800 dark:text-red-200 mb-2 sm:mb-3 flex items-center">
                   📉 Bottom Team
                 </h3>
                 <div className="space-y-2">
-                  <div className="font-bold text-lg sm:text-xl text-red-900 dark:text-red-100">{(pointsTable as any).data.statistics.bottomTeam.team}</div>
+                  <div className="font-bold text-lg sm:text-xl text-red-900 dark:text-red-100">{currentStatistics.bottomTeam.team}</div>
                   <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
-                    <div className="text-gray-700 dark:text-gray-300">Position: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.position}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Points: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.points}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Played: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.played}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Won: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.wins}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">Lost: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.losses}</span></div>
-                    <div className="text-gray-700 dark:text-gray-300">NRR: <span className="font-semibold">{(pointsTable as any).data.statistics.bottomTeam.netRunRate.toFixed(3)}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Position: <span className="font-semibold">{currentStatistics.bottomTeam.position}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Points: <span className="font-semibold">{currentStatistics.bottomTeam.points}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Played: <span className="font-semibold">{currentStatistics.bottomTeam.played}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Won: <span className="font-semibold">{currentStatistics.bottomTeam.wins}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">Lost: <span className="font-semibold">{currentStatistics.bottomTeam.losses}</span></div>
+                    <div className="text-gray-700 dark:text-gray-300">NRR: <span className="font-semibold">{currentStatistics.bottomTeam.netRunRate.toFixed(3)}</span></div>
                   </div>
                   <div className="mt-2 sm:mt-3">
                     <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Recent Form:</div>
                     <div className="flex gap-1">
-                      {(pointsTable as any).data.statistics.bottomTeam.performanceHistory?.slice(-5).map((result: string, idx: number) => (
+                      {currentStatistics.bottomTeam.performanceHistory?.slice(-5).map((result: string, idx: number) => (
                         <span
                           key={idx}
                           className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 text-xs font-bold rounded-full text-white ${
@@ -455,15 +463,20 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
 
       {/* Tournament Schedule Section */}
       {(() => {
-        const rawScheduleData = (currentData as any)?.schedule?.data?.schedule || {};
-        const scheduleData = Object.keys(rawScheduleData).reduce((acc, matchType) => {
-          acc[matchType] = rawScheduleData[matchType].map((match: ScheduleEntry) => ({
-            ...match,
-            teamA: cleanTeamName(match.teamA),
-            teamB: cleanTeamName(match.teamB)
-          }));
-          return acc;
-        }, {} as Record<string, ScheduleEntry[]>);
+        const rawScheduleData = schedule || [];
+        // Transform schedule array to grouped schedule object if needed
+        const scheduleData = Array.isArray(rawScheduleData) && rawScheduleData.length > 0
+          ? rawScheduleData.reduce((acc, match: ScheduleEntry) => {
+              const matchType = match.matchType || 'LEAGUE';
+              if (!acc[matchType]) acc[matchType] = [];
+              acc[matchType].push({
+                ...match,
+                teamA: cleanTeamName(match.teamA),
+                teamB: cleanTeamName(match.teamB)
+              });
+              return acc;
+            }, {} as Record<string, ScheduleEntry[]>)
+          : {};
 
         return Object.keys(scheduleData).length > 0 && (
           <section className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3 sm:p-6 shadow-sm">
@@ -622,7 +635,9 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
 
       {/* Recent Matches Section */}
       {(() => {
-        const recentMatches = matchesArray.filter((match: ScheduleEntry) => match.verdict && match.verdict.trim() !== '');
+        const recentMatches = matchesArray.filter((match: Match | ScheduleEntry) => 
+          ('verdict' in match) && (match as ScheduleEntry).verdict && (match as ScheduleEntry).verdict?.trim() !== ''
+        ) as ScheduleEntry[];
         return recentMatches.length > 0 && (
           <section className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
             <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">
