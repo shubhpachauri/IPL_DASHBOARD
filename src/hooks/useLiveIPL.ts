@@ -207,16 +207,34 @@ export function useLiveIPL() {
     swrConfig.pointsTable
   );
 
+  // Fetch matches for the current season
+  const { 
+    data: matchesData, 
+    error: matchesError,
+    isLoading: matchesLoading,
+    mutate: mutateMatches 
+  } = useSWR<APIResponse<MatchesResponse>>(
+    swrKeys.matches('all', 75), // Fetch all matches with a limit of 75
+    apiConfig.fetcher,
+    {
+      ...swrConfig.matches,
+      refreshInterval: 600000, // 1 minute for all matches
+      refreshWhenHidden: false,
+      refreshWhenOffline: false,
+    }
+  );
+
   // Extract data from responses
   const liveMatches = liveMatchesData?.data.matches || [];
   const upcomingMatches = upcomingMatchesData?.data.matches || [];
   const pointsTable = pointsTableData?.data.pointsTable || [];
   const statistics = pointsTableData?.data.statistics;
+  const matches = matchesData?.data.matches || [];
 
   // Computed values
   const hasLiveMatches = liveMatches.length > 0;
-  const isAnyLoading = liveMatchesLoading || upcomingMatchesLoading || pointsTableLoading;
-  const hasAnyError = liveMatchesError || upcomingMatchesError || pointsTableError;
+  const isAnyLoading = liveMatchesLoading || upcomingMatchesLoading || pointsTableLoading || matchesLoading;
+  const hasAnyError = liveMatchesError || upcomingMatchesError || pointsTableError || matchesError;
 
   // Force refresh all data
   const forceRefreshAll = useCallback(async () => {
@@ -281,6 +299,9 @@ export function useLiveIPL() {
     pointsTableError,
     pointsTableLoading,
     
+    // matches data
+    matches,
+
     // Combined states
     isLoading: isAnyLoading,
     hasError: hasAnyError,
@@ -290,7 +311,8 @@ export function useLiveIPL() {
     mutateLiveMatches,
     mutateUpcomingMatches,
     mutatePointsTable,
-    
+    mutateMatches,
+
     // Meta information
     dataFreshness,
     lastUpdated: {

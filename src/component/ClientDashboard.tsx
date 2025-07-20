@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useLiveIPL } from '@/hooks/useLiveIPL';
 import { useCacheManagement } from '@/lib/cacheUtils';
 import { ScheduleEntry, PointsEntry, Match } from '@/types';
+import Loader from './Loader';
 
 interface ClientDashboardProps {
   initialData: {
@@ -118,9 +119,9 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
   const pointsTable = currentData?.pointsTable || [];
   const schedule = currentData?.schedule || [];
   const currentStatistics = currentData?.statistics;
-  
+
   // Extract matches array from the API response structure
-  const matchesArray = matches.map((match: Match | ScheduleEntry) => ({
+  const matchesArray = matches.data.matches.map((match: Match | ScheduleEntry) => ({
     ...match,
     teamA: cleanTeamName(match.teamA),
     teamB: cleanTeamName(match.teamB)
@@ -281,7 +282,7 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
       )}
 
       {/* Points Table Section */}
-      {pointsTable && pointsTable.length > 0 && (
+      {pointsTable && pointsTable.length > 0 ? (
         <section className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3 sm:p-6 shadow-sm">
           <h2 className="text-lg sm:text-xl font-bold text-blue-800 dark:text-blue-200 mb-3 sm:mb-4">📊 Points Table</h2>
           <div className="overflow-x-auto -mx-3 sm:mx-0">
@@ -364,6 +365,8 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
             </div>
           </div>
         </section>
+      ) : (
+        <Loader text="Loading Points Table..." />
       )}
 
       {/* Statistics Section */}
@@ -463,28 +466,15 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
 
       {/* Tournament Schedule Section */}
       {(() => {
-        const rawScheduleData = schedule || [];
-        // Transform schedule array to grouped schedule object if needed
-        const scheduleData = Array.isArray(rawScheduleData) && rawScheduleData.length > 0
-          ? rawScheduleData.reduce((acc, match: ScheduleEntry) => {
-              const matchType = match.matchType || 'LEAGUE';
-              if (!acc[matchType]) acc[matchType] = [];
-              acc[matchType].push({
-                ...match,
-                teamA: cleanTeamName(match.teamA),
-                teamB: cleanTeamName(match.teamB)
-              });
-              return acc;
-            }, {} as Record<string, ScheduleEntry[]>)
-          : {};
+        const rawScheduleData = schedule.data.schedule || [];
 
-        return Object.keys(scheduleData).length > 0 && (
+        return Object.keys(rawScheduleData).length > 0 && (
           <section className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-lg p-3 sm:p-6 shadow-sm">
             <h2 className="text-lg sm:text-xl font-bold text-indigo-800 dark:text-indigo-200 mb-3 sm:mb-4 flex items-center">
               🗓️ Tournament Schedule
             </h2>
             <div className="space-y-4 sm:space-y-6">
-              {Object.entries(scheduleData).map(([matchType, matches]) => (
+              {Object.entries(rawScheduleData).map(([matchType, matches]) => (
                 <div key={matchType} className="bg-white dark:bg-gray-800 rounded-lg border border-indigo-200 dark:border-indigo-600 p-3 sm:p-4">
                   <h3 className="text-base sm:text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-3 flex items-center">
                     <span className="mr-2">
@@ -633,7 +623,7 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
         );
       })()}
 
-      {/* Recent Matches Section */}
+      {/* Recent Matches Section
       {(() => {
         const recentMatches = matchesArray.filter((match: Match | ScheduleEntry) => 
           ('verdict' in match) && (match as ScheduleEntry).verdict && (match as ScheduleEntry).verdict?.trim() !== ''
@@ -660,7 +650,7 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
             </div>
           </section>
         );
-      })()}
+      })()} */}
     </div>
   );
 }
