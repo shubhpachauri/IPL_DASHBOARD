@@ -1,6 +1,16 @@
 import { SSRDashboard } from "@/component/SSRDashboard";
 
-// Force dynamic rendering (SSR) for this page
+/*
+  Explanation:
+
+export const dynamic = 'force-dynamic'; is a Next.js (App Router) convention that tells the framework to always render this page on the server (SSR), not statically or from cache.
+This is useful for pages that need to show real-time or frequently updated data, like your IPL dashboard.
+By setting this, every request to this page will trigger server-side rendering, ensuring users always see the latest data.
+You also have export const revalidate = 0;, which further ensures no static caching is used.
+
+Summary:
+This page will always be server-rendered, making it suitable for live dashboards or real-time data.
+*/
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 

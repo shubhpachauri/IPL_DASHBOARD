@@ -41,9 +41,6 @@ export async function scrapeSchedule(config) {
 /**
  * Extracts all match data from the page
  */
-// ...existing code...
-
-// ...existing code...
 
 async function extractAllMatches(page) {
   console.log('📊 Extracting match data...');

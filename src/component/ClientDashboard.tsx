@@ -48,19 +48,20 @@ export function ClientDashboard({ initialData }: ClientDashboardProps) {
   
   const { cacheDebug } = useCacheManagement();
 
-  // Auto-refresh every 30 seconds for live updates
-  useEffect(() => {
-    setIsClient(true);
-    const interval = setInterval(async () => {
-      const result = await forceRefreshAll();
-      if (result.success) {
-        setLastRefreshTime(new Date().toISOString());
-        cacheDebug.logCacheStatus('auto-refresh', true, new Date().toISOString());
-      }
-    }, 30000);
+  //removed as swr is polling any ways
+  // // Auto-refresh every 30 seconds for live updates 
+  // useEffect(() => {
+  //   setIsClient(true);
+  //   const interval = setInterval(async () => {
+  //     const result = await forceRefreshAll();
+  //     if (result.success) {
+  //       setLastRefreshTime(new Date().toISOString());
+  //       cacheDebug.logCacheStatus('auto-refresh', true, new Date().toISOString());
+  //     }
+  //   }, 30000);
 
-    return () => clearInterval(interval);
-  }, [forceRefreshAll, cacheDebug]);
+  //   return () => clearInterval(interval);
+  // }, [forceRefreshAll, cacheDebug]);
 
   const handleManualRefresh = async () => {
     const result = await forceRefreshAll();
